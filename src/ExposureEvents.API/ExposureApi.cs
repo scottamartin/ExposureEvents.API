@@ -4,7 +4,9 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using ExposureEvents.API.Models;
+using ExposureEvents.API.Models.Games;
 using Newtonsoft.Json.Linq;
+using Event = ExposureEvents.API.Models.Events.Event;
 
 namespace ExposureEvents.API
 {
@@ -13,6 +15,9 @@ namespace ExposureEvents.API
         private static readonly HttpClient Client;
         private readonly string _apiKey;
         private readonly string _apiSecret;
+
+        private const string EventsEndpoint = "/api/v1/events";
+        private const string GamesEndpoint = "/api/v1/games";
 
         static ExposureApi()
         {
@@ -27,9 +32,9 @@ namespace ExposureEvents.API
             Client.DefaultRequestHeaders.Add("Accept", "application/json");
         }
 
-        public async Task<PagedApiResult<ExposureEvent>> GetEventsAsync(int page = 1, int pageSize = 10, bool? archive = null, int? parentId = null, int? organizationId = null, params EventsIncludes[] includes)
+        public async Task<PagedApiResult<Event>> GetEventsAsync(int page = 1, int pageSize = 10, bool? archive = null, int? parentId = null, int? organizationId = null, params EventsIncludes[] includes)
         {
-            var uriBuilder = new UriBuilder(new Uri(Client.BaseAddress, "/api/v1/events"))
+            var uriBuilder = new UriBuilder(new Uri(Client.BaseAddress, EventsEndpoint))
             {
                 Query = $"page={page}&pagesize={pageSize}&archive={archive}"
             };
@@ -55,12 +60,12 @@ namespace ExposureEvents.API
             }
             
             var jObj = await SendRequestAsync(uriBuilder.Uri, HttpMethod.Get);
-            return jObj["Events"].ToObject<PagedApiResult<ExposureEvent>>();
+            return jObj["Events"].ToObject<PagedApiResult<Event>>();
         }
         
-        public async Task<ExposureEvent> GetEventAsync(int id, params EventsIncludes[] includes)
+        public async Task<Event> GetEventAsync(int id, params EventsIncludes[] includes)
         {
-            var uriBuilder = new UriBuilder(new Uri(Client.BaseAddress, "/api/v1/events"))
+            var uriBuilder = new UriBuilder(new Uri(Client.BaseAddress, EventsEndpoint))
             {
                 Query = $"id={id}"
             };
@@ -71,7 +76,54 @@ namespace ExposureEvents.API
             }
             
             var jObj = await SendRequestAsync(uriBuilder.Uri, HttpMethod.Get);
-            return jObj["Event"].ToObject<ExposureEvent>();
+            return jObj["Event"].ToObject<Event>();
+        }
+
+        public async Task<PagedApiResult<Game>> GetGamesAsync(int eventId, int page = 1, int pageSize = 1000, int? divisionId = null, int? teamId = null, DateTime? date = null, params GameIncludes[] includes)
+        {
+            var uriBuilder = new UriBuilder(new Uri(Client.BaseAddress, GamesEndpoint))
+            {
+                Query = $"eventid={eventId}page={page}&pagesize={pageSize}"
+            };
+            
+            if (divisionId != null)
+            {
+                uriBuilder.Query += $"&divisionid={divisionId.Value}";
+            }
+            
+            if (teamId != null)
+            {
+                uriBuilder.Query += $"&teamid={teamId.Value}";
+            }
+            
+            if (date != null)
+            {
+                uriBuilder.Query += $"&date={date.Value.Date:d}";
+            }
+            
+            if (includes.Length > 0)
+            {
+                uriBuilder.Query += $"&includes={string.Join(",", includes)}";
+            }
+            
+            var jObj = await SendRequestAsync(uriBuilder.Uri, HttpMethod.Get);
+            return jObj["Games"].ToObject<PagedApiResult<Game>>();
+        }
+        
+        public async Task<Game> GetGameAsync(int gameId, params GameIncludes[] includes)
+        {
+            var uriBuilder = new UriBuilder(new Uri(Client.BaseAddress, GamesEndpoint))
+            {
+                Query = $"id={gameId}"
+            };
+            
+            if (includes.Length > 0)
+            {
+                uriBuilder.Query += $"&includes={string.Join(",", includes)}";
+            }
+            
+            var jObj = await SendRequestAsync(uriBuilder.Uri, HttpMethod.Get);
+            return jObj["Game"].ToObject<Game>();
         }
 
         private async Task<JObject> SendRequestAsync(Uri url, HttpMethod httpMethod, string content = null)

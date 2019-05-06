@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 
-namespace ExposureEvents.API.Models
+namespace ExposureEvents.API.Models.Events
 {
-    public class ExposureEvent
+    public class Event
     {
         public int Id { get; set; }
         public int ParentId { get; set; }
@@ -17,7 +17,7 @@ namespace ExposureEvents.API.Models
         public DateTime StartDate { get; set; }
         public string TimeZone { get; set; }
         public DateTime EndDate { get; set; }
-        public ExposureAddress Address { get; set; }
+        public Address Address { get; set; }
         public IEnumerable<ExposureDivision> Divisions { get; set; } = new List<ExposureDivision>();
         public IEnumerable<ExposureAssets> Assets { get; set; } = new List<ExposureAssets>();
         public IEnumerable<ExposureVenue> Venues { get; set; } = new List<ExposureVenue>();

@@ -1,6 +1,6 @@
 namespace ExposureEvents.API.Models
 {
-    public class ExposureAddress
+    public class Address
     {
         public string Location { get; set; }
         public string StreetAddress { get; set; }

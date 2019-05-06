@@ -7,7 +7,7 @@ namespace ExposureEvents.API.Models
         public int Id { get; set; }
         public string Name { get; set; }
         public string Abbr { get; set; }
-        public ExposureAddress Address { get; set; }
+        public Address Address { get; set; }
         public IEnumerable<ExposureLocation> Locations { get; set; } = new List<ExposureLocation>();
     }
 }
